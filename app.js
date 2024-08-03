@@ -14,6 +14,11 @@ let blocks = [];
 let provider;
 let signer;
 
+function shortenAddress(address, chars = 4) {
+    const start = address.slice(0, chars + 2); // Keep the '0x' prefix and the first few characters
+    const end = address.slice(-chars); // Keep the last few characters
+    return `${start}...${end}`;
+}
 
 document.getElementById('connect-button').addEventListener('click', async () => {
     if (typeof window.ethereum !== 'undefined') {
@@ -34,7 +39,7 @@ document.getElementById('connect-button').addEventListener('click', async () => 
             // Hide the connect button after successful connection
             document.getElementById('connect-alert').style.display = 'none';
 
-            appendAlert(`Succefully connected to Metamask account ${signer.getAddress()}!`, 'success');
+            appendAlert(`Succefully connected to Metamask account ${await shortenAddress(signer.getAddress())}!`, 'success');
         } catch (error) {
             console.error('Error connecting to MetaMask:', error);
             appendAlert('An internal error ocurred...', 'danger');
@@ -65,17 +70,17 @@ async function updateBlocks(depth, startFrom=0, clear=true) {
         let block = await provider.getBlock(latestBlockNumber - i);
         let blockN = blocks.length;
         blocks.push(block.number);
-    
+        
+        let date = new Date(block.timestamp * 1000);
+
         // Display block
         blockDetailsDiv.innerHTML += `
             <div class="block card shadow-lg p-3 mb-3 mt-3 rounded bg-secondary-subtle" id="block-${blockN}">
                 <button class="card-header" id="block-${blockN}-title" onclick="showTransactions(${blockN})"><h5>Block ${block.number}</h5></button>
                 <div class="card-body">
-                    <p class="card-text"><strong>${block.transactions.length}</strong> txns. <strong>Hash:</strong> ${block.hash}.</p>
-                    <p class="card-text"><strong>By:</strong> ${block.miner}. <strong>At </strong> ${new Date(block.timestamp * 1000).toLocaleString()}</li>
+                    <p class="card-text"><strong>${block.transactions.length}</strong> txns. <strong>Hash:</strong> ${shortenAddress(block.hash)}.</p>
+                    <p class="card-text"><strong>By:</strong> ${shortenAddress(block.miner)}. <strong>At </strong> ${formatDistanceToNow(date)}</li>
                 </div>
-                <ul id="block-${blockN}-txns" class="list-group list-group-flush">
-                </ul>
             </div>
         `;
         
@@ -86,17 +91,12 @@ async function updateBlocks(depth, startFrom=0, clear=true) {
     }
 }
 
-function shortenAddress(address, chars = 4) {
-    const start = address.slice(0, chars + 2); // Keep the '0x' prefix and the first few characters
-    const end = address.slice(-chars); // Keep the last few characters
-    return `${start}...${end}`;
-}
-
 async function showTransactions(blockN) {
-    let blockTxns = document.getElementById(`block-${blockN}-txns`);
+    let blockTxns = document.getElementById('txn-details');
     let blockId = blocks[blockN];
     let updBlock = await provider.getBlockWithTransactions(blockId);
     
+    // Clear the transactions
     blockTxns.innerHTML = '';
 
     for(let i = 0; i < updBlock.transactions.length; i++) {
@@ -110,17 +110,20 @@ async function showTransactions(blockN) {
             <strong>To:</strong> ${shortenAddress(tx.to)}</p>
             `;
         } else {
+            // If there's data or address is 0x0, it's a contract interaction/creation
             content = `
-            <p>${ethers.utils.formatEther(tx.value)} ETH. <strong>Contract.</strong>.</p>
+            <p>${ethers.utils.formatEther(tx.value)} ETH. <strong>Contract</strong>.</p>
             <p><strong>From:</strong> ${shortenAddress(tx.from)}.
             <strong>To:</strong> ${shortenAddress(tx.to)}</p>
             `;
         }
 
         blockTxns.innerHTML += `
-            <li class="list-group-item">
-                ${content}
-            </li>
+            <div class="block card shadow-lg p-3 mb-3 mt-3 rounded bg-secondary-subtle">
+                <div class="card-body">
+                    ${content}
+                </div>
+            </div>
         `;
     }
 }
