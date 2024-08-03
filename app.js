@@ -69,7 +69,7 @@ async function updateBlocks(depth, startFrom=0, clear=true) {
         // Display block
         blockDetailsDiv.innerHTML += `
             <div class="block card shadow-lg p-3 mb-3 mt-3 rounded bg-secondary-subtle" id="block-${blockN}">
-                <a class="card-header" id="block-${blockN}-title"><h5>Block ${block.number}</h5></a>
+                <button class="card-header" id="block-${blockN}-title" onclick="showTransactions(${blockN})"><h5>Block ${block.number}</h5></button>
                 <div class="card-body">
                     <p class="card-text"><strong>${block.transactions.length}</strong> txns. <strong>Hash:</strong> ${block.hash}.</p>
                     <p class="card-text"><strong>By:</strong> ${block.miner}. <strong>At </strong> ${new Date(block.timestamp * 1000).toLocaleString()}</li>
@@ -79,8 +79,17 @@ async function updateBlocks(depth, startFrom=0, clear=true) {
             </div>
         `;
         
-        document.getElementById(`block-${blockN}-title`).addEventListener('click', async () => {await showTransactions(blockN)})
+        document.getElementById(`block-${blockN}-title`).addEventListener('click', async () => {
+            console.log(blockN);
+            await showTransactions(blockN);
+        });
     }
+}
+
+function shortenAddress(address, chars = 4) {
+    const start = address.slice(0, chars + 2); // Keep the '0x' prefix and the first few characters
+    const end = address.slice(-chars); // Keep the last few characters
+    return `${start}...${end}`;
 }
 
 async function showTransactions(blockN) {
@@ -95,15 +104,21 @@ async function showTransactions(blockN) {
         let content = '';
         
         if(tx.data === '0x' && tx.to !== null){
-            content = `${ethers.utils.formatEther(tx.value)} ETH.
-            <strong>From:</strong> ${tx.from}. To:</strong> ${tx.to ? tx.to : 'Contract Creation'}`;
+            content = `
+            <p>${ethers.utils.formatEther(tx.value)} ETH.</p>
+            <p><strong>From:</strong> ${shortenAddress(tx.from)}.
+            <strong>To:</strong> ${shortenAddress(tx.to)}</p>
+            `;
         } else {
-            content = `${ethers.utils.formatEther(tx.value)} ETH. <strong>Contract interaction!</strong>.
-            <strong>From:</strong> ${tx.from}. To:</strong> ${tx.to ? tx.to : 'Contract Creation'}`;
+            content = `
+            <p>${ethers.utils.formatEther(tx.value)} ETH. <strong>Contract.</strong>.</p>
+            <p><strong>From:</strong> ${shortenAddress(tx.from)}.
+            <strong>To:</strong> ${shortenAddress(tx.to)}</p>
+            `;
         }
 
         blockTxns.innerHTML += `
-            <li class="list-group-item">|
+            <li class="list-group-item">
                 ${content}
             </li>
         `;
