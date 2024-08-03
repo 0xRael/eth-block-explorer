@@ -69,7 +69,7 @@ async function updateBlocks(depth, startFrom=0, clear=true) {
         // Display block
         blockDetailsDiv.innerHTML += `
             <div class="block card shadow-lg p-3 mb-3 mt-3 rounded bg-secondary-subtle" id="block-${blockN}">
-                <h5 class="card-header" id="block-${blockN}-title">Block ${block.number}</h5>
+                <a class="card-header" id="block-${blockN}-title"><h5>Block ${block.number}</h5></a>
                 <div class="card-body">
                     <p class="card-text"><strong>${block.transactions.length}</strong> txns. <strong>Hash:</strong> ${block.hash}.</p>
                     <p class="card-text"><strong>By:</strong> ${block.miner}. <strong>At </strong> ${new Date(block.timestamp * 1000).toLocaleString()}</li>
