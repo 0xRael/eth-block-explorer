@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ethereum Block Explorer</title>
-    <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
+    <script type="module">
+        import { ethers } from "https://cdn.ethers.io/lib/ethers-5.2.esm.min.js";
+    </script>
     <style>
         body {
             font-family: Arial, sans-serif;
