@@ -1,4 +1,7 @@
 let blocks = [];
+let provider;
+let signer;
+
 
 document.getElementById('connect-button').addEventListener('click', async () => {
     if (typeof window.ethereum !== 'undefined') {
@@ -7,10 +10,10 @@ document.getElementById('connect-button').addEventListener('click', async () => 
             await window.ethereum.request({ method: 'eth_requestAccounts' });
 
             // Create an ethers.js provider using MetaMask's provider
-            const provider = new ethers.BrowserProvider(window.ethereum);
+            provider = new ethers.providers.Web3Provider(window.ethereum);
 
             // Get the signer
-            const signer = provider.getSigner();
+            signer = provider.getSigner();
             console.log('Account:', signer);
 
             // Display block details
@@ -32,6 +35,9 @@ document.getElementById('fetch-more').addEventListener('click', async () => {
 
 // Shows latest blocks
 async function updateBlocks(depth, startFrom=0) {
+    if(provider === null){
+        return;
+    }
     const latestBlockNumber = await provider.getBlockNumber();
     const blockDetailsDiv = document.getElementById('block-details');
     blockDetailsDiv.innerHTML = '';
