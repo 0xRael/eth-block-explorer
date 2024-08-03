@@ -60,7 +60,7 @@ document.getElementById('connect-button').addEventListener('click', async () => 
             // Hide the connect button after successful connection
             document.getElementById('connect-alert').style.display = 'none';
 
-            appendAlert(`Succefully connected to Metamask account ${await shortenAddress(signer.getAddress())}!`, 'success');
+            appendAlert(`Succefully connected to Metamask!`, 'success');
         } catch (error) {
             console.error('Error connecting to MetaMask:', error);
             appendAlert('An internal error ocurred...', 'danger');
