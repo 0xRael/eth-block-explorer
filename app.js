@@ -79,12 +79,12 @@ async function updateBlocks(depth, startFrom=0, clear=true) {
             </div>
         `;
         
-        document.getElementById(`block-${blockN}-title`).addEventListener('click', showTransactions(blockN))
+        document.getElementById(`block-${blockN}-title`).addEventListener('click', async () => {await showTransactions(blockN)})
     }
 }
 
 async function showTransactions(blockN) {
-    let blockTxns = document.getElementById(`block-${blockN}`);
+    let blockTxns = document.getElementById(`block-${blockN}-txns`);
     let blockId = blocks[blockN];
     let updBlock = await provider.getBlockWithTransactions(blockId);
     
@@ -94,7 +94,7 @@ async function showTransactions(blockN) {
         let tx = updBlock.transactions[i];
         let content = '';
         
-        if(tx.data === '0x' && tx.to){
+        if(tx.data === '0x' && tx.to !== null){
             content = `${ethers.utils.formatEther(tx.value)} ETH.
             <strong>From:</strong> ${tx.from}. To:</strong> ${tx.to ? tx.to : 'Contract Creation'}`;
         } else {
