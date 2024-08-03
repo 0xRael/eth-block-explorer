@@ -1,3 +1,15 @@
+// Bootstrap alerts
+
+const alertPlaceholder = document.getElementById('liveAlertPlaceholder')
+const appendAlert = (message, type) => {
+  alertPlaceholder.innerHTML += `<div class="alert alert-${type} alert-dismissible" role="alert">
+       <div>${message}</div>
+       <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>`;
+}
+
+// Block Explorer
+
 let blocks = [];
 let provider;
 let signer;
@@ -20,27 +32,32 @@ document.getElementById('connect-button').addEventListener('click', async () => 
             await updateBlocks(5);
 
             // Hide the connect button after successful connection
-            document.getElementById('connect-button').style.display = 'none';
+            document.getElementById('connect-alert').style.display = 'none';
+
+            appendAlert(`Succefully connected to Metamask account ${signer.getAddress()}!`, 'success');
         } catch (error) {
             console.error('Error connecting to MetaMask:', error);
+            appendAlert('An internal error ocurred...', 'danger');
         }
     } else {
-        alert('MetaMask is not installed. Please install it to use this app.');
+        appendAlert('MetaMask is not installed. Please install it to use this app.', 'warning');
     }
 });
 
 document.getElementById('fetch-more').addEventListener('click', async () => {
-    await updateBlocks(5, blocks.length);
+    await updateBlocks(5, blocks.length, false);
 });
 
 // Shows latest blocks
-async function updateBlocks(depth, startFrom=0) {
+async function updateBlocks(depth, startFrom=0, clear=true) {
     if(provider === null){
         return;
     }
     const latestBlockNumber = await provider.getBlockNumber();
     const blockDetailsDiv = document.getElementById('block-details');
-    blockDetailsDiv.innerHTML = '';
+    if(clear){
+        blockDetailsDiv.innerHTML = '';
+    }
 
     for(let i = startFrom; i < (depth + startFrom); i++){
         // Get block
@@ -49,13 +66,12 @@ async function updateBlocks(depth, startFrom=0) {
 
         // Display block
         blockDetailsDiv.innerHTML += `
-            <div class="block" id="block-${blocks.length-1}">
-                <h2>Block ${block.number}</h2>
-                <p><strong>Hash:</strong> ${block.hash}</p>
-                <p><strong>Parent Hash:</strong> ${block.parentHash}</p>
-                <p><strong>Miner:</strong> ${block.miner}</p>
-                <p><strong>Timestamp:</strong> ${new Date(block.timestamp * 1000).toLocaleString()}</p>
-                <p><strong>Transactions:</strong> ${block.transactions.length}</p>
+            <div class="block card shadow-lg p-3 mb-3 mt-3 rounded bg-secondary-subtle" id="block-${blocks.length-1}">
+                <h5 class="card-header">Block ${block.number}</h5>
+                <div class="card-body">
+                    <p class="card-text"><strong>Hash:</strong> ${block.hash}. ${block.transactions.length} txns.</p>
+                    <p class="card-text"><strong>By:</strong> ${block.miner}. <strong>At </strong> ${new Date(block.timestamp * 1000).toLocaleString()}</li>
+                </div>
             </div>
         `;
     }
