@@ -57,22 +57,55 @@ async function updateBlocks(depth, startFrom=0, clear=true) {
     const blockDetailsDiv = document.getElementById('block-details');
     if(clear){
         blockDetailsDiv.innerHTML = '';
+        blocks = [];
     }
 
     for(let i = startFrom; i < (depth + startFrom); i++){
         // Get block
         let block = await provider.getBlock(latestBlockNumber - i);
-        blocks.push(block); // So we can have them loaded
-
+        let blockN = blocks.length;
+        blocks.push(block.number);
+    
         // Display block
         blockDetailsDiv.innerHTML += `
-            <div class="block card shadow-lg p-3 mb-3 mt-3 rounded bg-secondary-subtle" id="block-${blocks.length-1}">
-                <h5 class="card-header">Block ${block.number}</h5>
+            <div class="block card shadow-lg p-3 mb-3 mt-3 rounded bg-secondary-subtle" id="block-${blockN}">
+                <h5 class="card-header" id="block-${blockN}-title">Block ${block.number}</h5>
                 <div class="card-body">
-                    <p class="card-text"><strong>Hash:</strong> ${block.hash}. ${block.transactions.length} txns.</p>
+                    <p class="card-text"><strong>${block.transactions.length}</strong> txns. <strong>Hash:</strong> ${block.hash}.</p>
                     <p class="card-text"><strong>By:</strong> ${block.miner}. <strong>At </strong> ${new Date(block.timestamp * 1000).toLocaleString()}</li>
                 </div>
+                <ul id="block-${blockN}-txns" class="list-group list-group-flush">
+                </ul>
             </div>
+        `;
+        
+        document.getElementById(`block-${blockN}-title`).addEventListener('click', showTransactions(blockN))
+    }
+}
+
+async function showTransactions(blockN) {
+    let blockTxns = document.getElementById(`block-${blockN}`);
+    let blockId = blocks[blockN];
+    let updBlock = await provider.getBlockWithTransactions(blockId);
+    
+    blockTxns.innerHTML = '';
+
+    for(let i = 0; i < updBlock.transactions.length; i++) {
+        let tx = updBlock.transactions[i];
+        let content = '';
+        
+        if(tx.data === '0x' && tx.to){
+            content = `${ethers.utils.formatEther(tx.value)} ETH.
+            <strong>From:</strong> ${tx.from}. To:</strong> ${tx.to ? tx.to : 'Contract Creation'}`;
+        } else {
+            content = `${ethers.utils.formatEther(tx.value)} ETH. <strong>Contract interaction!</strong>.
+            <strong>From:</strong> ${tx.from}. To:</strong> ${tx.to ? tx.to : 'Contract Creation'}`;
+        }
+
+        blockTxns.innerHTML += `
+            <li class="list-group-item">|
+                ${content}
+            </li>
         `;
     }
 }
