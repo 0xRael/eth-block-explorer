@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ethereum Block Explorer</title>
-    <script src="https://cdn.ethers.io/lib/ethers-5.2.esm.min.js"></script>
+    <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"
+        type="application/javascript"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -18,7 +19,8 @@
     <h1>Ethereum Block Explorer</h1>
     <button id="connect-button">Connect to MetaMask</button>
     <div id="block-details"></div>
+    <button id="fetch-more">Fetch more blocks</button>
 
-    <script src="app.js?v=0.0.1"></script>
+    <script src="app.js?v=0.0.2"></script>
 </body>
 </html>

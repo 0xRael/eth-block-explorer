@@ -1,3 +1,5 @@
+let blocks = [];
+
 document.getElementById('connect-button').addEventListener('click', async () => {
     if (typeof window.ethereum !== 'undefined') {
         try {
@@ -13,6 +15,9 @@ document.getElementById('connect-button').addEventListener('click', async () => 
 
             // Display block details
             await updateBlocks(5);
+
+            // Hide the connect button after successful connection
+            document.getElementById('connect-button').style.display = 'none';
         } catch (error) {
             console.error('Error connecting to MetaMask:', error);
         }
@@ -21,21 +26,24 @@ document.getElementById('connect-button').addEventListener('click', async () => 
     }
 });
 
-async function updateBlocks(depth) {
-    //let blocks = [];
+document.getElementById('fetch-more').addEventListener('click', async () => {
+    await updateBlocks(5, blocks.length);
+});
 
+// Shows latest blocks
+async function updateBlocks(depth, startFrom=0) {
     const latestBlockNumber = await provider.getBlockNumber();
     const blockDetailsDiv = document.getElementById('block-details');
     blockDetailsDiv.innerHTML = '';
 
-    for(let i = 0; i < depth; i++){
+    for(let i = startFrom; i < (depth + startFrom); i++){
         // Get block
         let block = await provider.getBlock(latestBlockNumber - i);
-        //blocks.push(block);
+        blocks.push(block); // So we can have them loaded
 
         // Display block
         blockDetailsDiv.innerHTML += `
-            <div class="block">
+            <div class="block" id="block-${blocks.length-1}">
                 <h2>Block ${block.number}</h2>
                 <p><strong>Hash:</strong> ${block.hash}</p>
                 <p><strong>Parent Hash:</strong> ${block.parentHash}</p>
@@ -45,7 +53,4 @@ async function updateBlocks(depth) {
             </div>
         `;
     }
-
-    // Display blocks
-    
 }
