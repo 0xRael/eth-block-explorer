@@ -20,6 +20,27 @@ function shortenAddress(address, chars = 4) {
     return `${start}...${end}`;
 }
 
+function timeSince(timestamp) {
+    const now = new Date();
+    const secondsPast = (now.getTime() - timestamp * 1000) / 1000;
+    
+    if (secondsPast < 60) { // Less than a minute
+      return `${Math.round(secondsPast)} seconds ago`;
+    }
+    if (secondsPast < 3600) { // Less than an hour
+      return `${Math.round(secondsPast / 60)} minutes ago`;
+    }
+    if (secondsPast <= 86400) { // Less than a day
+      return `${Math.round(secondsPast / 3600)} hours ago`;
+    }
+    if (secondsPast > 86400) { // More than a day
+      const day = timestamp.getDate();
+      const month = timestamp.toDateString().match(/ [a-zA-Z]*/)[0].replace(" ", "");
+      const year = timestamp.getFullYear() == now.getFullYear() ? "" : ` ${timestamp.getFullYear()}`;
+      return `${day} ${month}${year}`;
+    }
+  }
+
 document.getElementById('connect-button').addEventListener('click', async () => {
     if (typeof window.ethereum !== 'undefined') {
         try {
@@ -70,8 +91,6 @@ async function updateBlocks(depth, startFrom=0, clear=true) {
         let block = await provider.getBlock(latestBlockNumber - i);
         let blockN = blocks.length;
         blocks.push(block.number);
-        
-        let date = new Date(block.timestamp * 1000);
 
         // Display block
         blockDetailsDiv.innerHTML += `
@@ -79,7 +98,7 @@ async function updateBlocks(depth, startFrom=0, clear=true) {
                 <button class="card-header" id="block-${blockN}-title" onclick="showTransactions(${blockN})"><h5>Block ${block.number}</h5></button>
                 <div class="card-body">
                     <p class="card-text"><strong>${block.transactions.length}</strong> txns. <strong>Hash:</strong> ${shortenAddress(block.hash)}.</p>
-                    <p class="card-text"><strong>By:</strong> ${shortenAddress(block.miner)}. <strong>At </strong> ${formatDistanceToNow(date)}</li>
+                    <p class="card-text"><strong>By:</strong> ${shortenAddress(block.miner)}. <strong>At </strong> ${timeSince(block.timestamp)}</li>
                 </div>
             </div>
         `;
